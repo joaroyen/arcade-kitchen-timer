@@ -1,0 +1,6 @@
+{
+    "board": "ATTinyCore:avr:attinyx5",
+    "configuration": "LTO=disable,TimerClockSource=default,chip=85,clock=1internal,bod=disable",
+    "sketch": "src\\Mini\\Mini.ino",
+    "port": "COM3"
+}
