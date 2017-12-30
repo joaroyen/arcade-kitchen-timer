@@ -1,19 +1,19 @@
 #ifndef __Audio_h
 #define __Audio_h
 
-#include "Timer.h"
-
+#include <Arduino.h>
 
 class Audio {
   public:
-    Audio(Timer* timer);
+    Audio();
     void wakeUp();
+    void up();
+    void down();
     void update();
+    int getFrequency();
   private:
-    Timer* _timer;
-    int _previousUpdateSeconds;
-    int _previousTimeTenth;
-    void beep(unsigned int frequency);
+    int _frequency;
+    int _previousSecond;
 };
 
 #endif

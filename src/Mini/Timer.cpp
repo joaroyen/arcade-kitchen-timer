@@ -1,6 +1,6 @@
+#include <Arduino.h>
 #include "Common.h"
 #include "Timer.h"
-
 
 static const int INITIAL_INPUT_DELAY_WINDOW = 2000;
 
@@ -65,3 +65,4 @@ int Timer::getInitialInputSeconds() {
 int Timer::currentTimeInSeconds() {
   return millis() / 1000;
 }
+

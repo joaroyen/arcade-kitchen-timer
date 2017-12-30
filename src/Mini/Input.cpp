@@ -1,6 +1,6 @@
-#include "Common.h"
+#include <Arduino.h>
+#include "Audio.h"
 #include "Input.h"
-
 
 const int INPUT_PIN = A2;
 
@@ -9,8 +9,8 @@ const int INPUT_1_VALUE = 609;
 const int INPUT_10_VALUE = 769;
 const int INPUT_1_AND_10_VALUE = 837;
 
-Input::Input(Timer* timer) {
-  _timer = timer;
+Input::Input(Audio* audio) {
+  _audio = audio;
   wakeUp();
 }
 
@@ -21,8 +21,11 @@ void Input::wakeUp() {
 
 void Input::read() {
   int command = readCommand();
-  if (command > COMMAND_NONE) {
-    _timer->addMinutes(command);
+  if (command == COMMAND_1) {
+    _audio->down();
+  }
+  else if (command == COMMAND_10) {
+    _audio->up();
   }
 }
 
@@ -41,10 +44,7 @@ int Input::readCommand(){
   _totalReadValue += value;
   _numberOfReadValues++;
 
-  if (_numberOfReadValues == 10) {
-    return valueToCommand();
-  }
-  else if (_numberOfReadValues % 150 == 0) {
+  if (_numberOfReadValues % 5 == 0) {
     return valueToCommand();
   }
   else {
@@ -73,3 +73,7 @@ int Input::readAnalogInput() {
   delay(1);
   return analogRead(INPUT_PIN);
 }
+
+
+
+

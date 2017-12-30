@@ -1,6 +1,8 @@
+#include <Arduino.h>
+
 #include "Common.h"
 #include "Display.h"
-
+#include "Audio.h"
 
 static const byte SCAN_LIMIT = B011;
 
@@ -33,8 +35,8 @@ static const byte LED_SEGMENTS_DIGITS[] = {
   B11110111
 };
 
-Display::Display(Timer* timer) {
-  _timer = timer;
+Display::Display(Audio* audio) {
+  _audio = audio;
 }
 
 void Display::wakeUp() {
@@ -50,29 +52,9 @@ void Display::shutdown() {
 }
 
 void Display::update() {
-  int seconds = _timer->getSecondsRemaining();
-  if (seconds <= 0) {
-    seconds = 0;
-    if (_timer->isRunning()) {
-      flashDisplay();
-    }
-  }
-  else if (!_previousState){
-    on();
-    _previousState = true;
-  }
+  int frequency = _audio->getFrequency();
 
-  
-  if (seconds == _previousUpdateSeconds) return;
-  _previousUpdateSeconds = seconds;
-
-  adjustIntensity(seconds);
-  if (seconds >= 3600) {
-    writeHoursAndMinutes(seconds);
-  }
-  else {
-    writeMinutesAndSeconds(seconds);
-  }
+  write(frequency);
 }
 
 void Display::initialize() {
@@ -89,7 +71,7 @@ void Display::initialize() {
   spiTransfer(MAX7219_OP_SCANLIMIT, SCAN_LIMIT);
   spiTransfer(MAX7219_OP_DECODEMODE, 0);
   spiTransfer(MAX7219_OP_INTENSITY, DISPLAY_INTENSITY_HIGH);
-  writeTime(0, 0);
+  write(0);
 }
 
 void Display::on() {
@@ -104,25 +86,11 @@ void Display::off() {
   spiTransfer(MAX7219_OP_SHUTDOWN, 0);
 }
 
-void Display::writeHoursAndMinutes(int seconds) {
-  writeTime(seconds / 3600, (seconds / 60) % 60);
-}
-
-void Display::writeMinutesAndSeconds(int seconds) {
-  writeTime((seconds / 60) % 60, seconds % 60);
-}
-
-void Display::writeTime(int upper, int lower) {
-  byte firstDigit = upper / 10;
-  if (firstDigit == 0) {
-    spiTransfer(MAX7219_OP_DIGIT_0, LED_SEGMENTS_SPACE);
-  }
-  else {
-    spiTransfer(MAX7219_OP_DIGIT_0, LED_SEGMENTS_DIGITS[firstDigit]);
-  }
-  spiTransfer(MAX7219_OP_DIGIT_1, LED_SEGMENTS_DIGITS[upper % 10]);
-  spiTransfer(MAX7219_OP_DIGIT_2, LED_SEGMENTS_DIGITS[lower / 10]);
-  spiTransfer(MAX7219_OP_DIGIT_3, LED_SEGMENTS_DIGITS[lower % 10]);
+void Display::write(int frequency) {
+  spiTransfer(MAX7219_OP_DIGIT_0, LED_SEGMENTS_DIGITS[frequency / 1000]);
+  spiTransfer(MAX7219_OP_DIGIT_1, LED_SEGMENTS_DIGITS[frequency / 100 % 10]);
+  spiTransfer(MAX7219_OP_DIGIT_2, LED_SEGMENTS_DIGITS[frequency / 10 % 10]);
+  spiTransfer(MAX7219_OP_DIGIT_3, LED_SEGMENTS_DIGITS[frequency % 10]);
 }
 
 void Display::spiTransfer(byte opcode, byte data) {
@@ -130,32 +98,4 @@ void Display::spiTransfer(byte opcode, byte data) {
   shiftOut(DATA_PIN, CLOCK_PIN, MSBFIRST, opcode);
   shiftOut(DATA_PIN, CLOCK_PIN, MSBFIRST, data);
   digitalWrite(LOAD_PIN, HIGH);
-}
-
-void Display::flashDisplay() {
-  if (millis() % 1000 > 400) {
-    if (!_previousState) {
-      on();
-      _previousState = true;
-    }
-  }
-  else if (_previousState) {
-    off();
-    _previousState = false;
-  }
-}
-
-void Display::adjustIntensity(int seconds) {
-  if (!_timer->isRunning() || seconds <= 60 || seconds % 60 == 0) {
-      if (_previousIntensity != DISPLAY_INTENSITY_HIGH) {
-        spiTransfer(MAX7219_OP_INTENSITY, DISPLAY_INTENSITY_HIGH);
-        _previousIntensity = DISPLAY_INTENSITY_HIGH;
-      }
-  }
-  else {
-      if (_previousIntensity != DISPLAY_INTENSITY_LOW) {
-        spiTransfer(MAX7219_OP_INTENSITY, DISPLAY_INTENSITY_LOW);
-        _previousIntensity = DISPLAY_INTENSITY_LOW;
-      }
-  }
 }

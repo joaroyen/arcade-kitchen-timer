@@ -1,22 +1,14 @@
+#include <Arduino.h>
 #include <avr/interrupt.h>
 #include <avr/sleep.h>
 #include <avr/power.h>
 #include <avr/wdt.h>
 
-
 #include "Common.h"
 #include "Power.h"
 
-
-Power::Power(Timer* timer) {
-  _timer = timer;
+Power::Power() {
   wdt_disable();
-}
-
-void Power::thinkAboutGoingToSleep() {
-  if (_timer->getSecondsRemaining() < -ALARM_DURATION_IN_SECONDS) {
-    reset();
-  }
 }
 
 void Power::sleep() {

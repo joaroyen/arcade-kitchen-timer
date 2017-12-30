@@ -1,13 +1,13 @@
 #ifndef __Power_h
 #define __Power_h
 
+#include <Arduino.h>
 #include "Timer.h"
 
 
 class Power {
   public:
-    Power(Timer* timer);
-    void thinkAboutGoingToSleep();
+    Power();
     void sleep();
   private:
     Timer* _timer;

@@ -1,29 +1,26 @@
 #ifndef __Display_h
 #define __Display_h
 
-#include "Timer.h"
+#include <Arduino.h>
+#include "Audio.h"
 
 
 class Display {
   public:
-    Display(Timer* timer);
+    Display(Audio* audio);
     void initialize();
     void update();
     void wakeUp();
     void shutdown();
   private:
-    Timer* _timer;
+    Audio* _audio;
     int _previousUpdateSeconds;
     bool _previousState;
     int _previousIntensity;
     void on();
     void off();
-    void writeHoursAndMinutes(int seconds);
-    void writeMinutesAndSeconds(int seconds);
-    void writeTime(int upper, int lower);
-    void spiTransfer(byte opcode, byte data);
-    void flashDisplay();
-    void adjustIntensity(int seconds);
+    void write(int frequency);
+    void Display::spiTransfer(byte opcode, byte data);
 };
 
 #endif

@@ -1,8 +1,8 @@
 #ifndef __Input_h
 #define __Input_h
 
-#include "Timer.h"
-
+#include <Arduino.h>
+#include "Audio.h"
 
 const int COMMAND_NONE = 0;
 const int COMMAND_1 = 1;
@@ -11,11 +11,11 @@ const int COMMAND_60 = 60;
 
 class Input {
   public:
-    Input(Timer* timer);
+    Input(Audio* audio);
     void wakeUp();
     void read();
   private:
-    Timer* _timer;
+    Audio* _audio;
     int _previousReadTime;
     long _totalReadValue;
     int _numberOfReadValues;
